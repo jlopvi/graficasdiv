@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Graficos</title>
+  <style media="screen">
+    .grafica{
+      width: 100%;
+      background: #404040;
+      /* padding: 10px; */
+
+    }
+    .grafica table th,
+    .grafica table td{
+      border: 1px solid #f3f3f3;
+      color: #f3f3f3;
+
+    }
+    .grafica svg{
+      background: #366091;
+    }
+  </style>
+</head>
+<body>
+  <select class="" name="tipo" id="tipo">
+    <optgroup label="Grafico de Barras">
+      <option value="bar">Barras</option>
+      <option value="bar3d">Barras 3D</option>
+      <option value="stackbar3d">Barras Apiladas 3D</option>
+      <option value="groupbar3d">Barras Agrupadas 3D</option>
+    </optgroup>
+    <optgroup label="Grafico Cilindrico">
+      <option value="cylinder3d">Cilindro 3D</option>
+      <option value="stackcylinder3d">Cilindros Apilados 3D</option>
+      <option value="groupcylinder3d">Cilindros Agrupados 3D</option>
+    </optgroup>
+    <optgroup label="Graficos Circular">
+      <option value="pie">Pastel</option>
+      <option value="pie3d">Pastel 3D</option>
+    </optgroup>
+  </select>
+  <select class="" name="colorTipo" id="colorTipo">
+      <option value="solid">Solido</option>
+      <option value="bar3d">Degradado</option>
+  </select>
+  <select class="" name="cantidad" id="cantidad">
+    <option value="0" selected disabled>Candidad Colores</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+  <input type="color" name="" value="#B7286A">
+  <button class="" id="btn" data-for="#graf1">Generar Grafica</button>
+  <div id="graf1" class="grafica"></div>
+  <div style="width: 50px; height:300px; background: red"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3.v4.min.js">
+</script>
+<script type="text/javascript" src="chart2.js">
+</script>
+<script type="text/javascript">
+$(function() {
+  let servdatos = {
+    "id":"8",
+    "name":"INDICADOR DE LLAMADAS",
+    "width":1000,
+    
+    "vars":["Nada","Otros","Boletos","Reservas"],
+    "series":{
+      "Test1":[
+        {"axisLabel":"Nada","axeY":117},
+        {"axisLabel":"Otros","axeY":85},
+        {"axisLabel":"Boletos","axeY":59},
+        {"axisLabel":"Reservas","axeY":129}
+      ],
+      "Test2":[
+        {"axisLabel":"Nada","axeY":73},
+        {"axisLabel":"Otros","axeY":112},
+        {"axisLabel":"Boletos","axeY":65},
+        {"axisLabel":"Reservas","axeY":52}
+      ],
+      "Test3":[
+        {"axisLabel":"Nada","axeY":93},
+        {"axisLabel":"Otros","axeY":108},
+        {"axisLabel":"Boletos","axeY":83},
+        {"axisLabel":"Reservas","axeY":66}
+      ],
+      "Test4":[
+        {"axisLabel":"Nada","axeY":97},
+        {"axisLabel":"Otros","axeY":136},
+        {"axisLabel":"Boletos","axeY":120},
+        {"axisLabel":"Reservas","axeY":83}
+      ],
+      "Test5":[
+        {"axisLabel":"Nada","axeY":96}
+        ,{"axisLabel":"Otros","axeY":51},
+        {"axisLabel":"Boletos","axeY":107},
+        {"axisLabel":"Reservas","axeY":120}
+      ],
+      "Test6":[
+        {"axisLabel":"Nada","axeY":96}
+        ,{"axisLabel":"Otros","axeY":51},
+        {"axisLabel":"Boletos","axeY":107},
+        {"axisLabel":"Reservas","axeY":120}
+      ]
+      ,
+      "Test7":[
+        {"axisLabel":"Nada","axeY":96}
+        ,{"axisLabel":"Otros","axeY":51},
+        {"axisLabel":"Boletos","axeY":107},
+        {"axisLabel":"Reservas","axeY":120}
+      ]
+      ,
+      "Test8":[
+        {"axisLabel":"Nada","axeY":96}
+        ,{"axisLabel":"Otros","axeY":51},
+        {"axisLabel":"Boletos","axeY":107},
+        {"axisLabel":"Reservas","axeY":120}
+      ]
+      ,
+      "Test9":[
+        {"axisLabel":"Nada","axeY":96}
+        ,{"axisLabel":"Otros","axeY":51},
+        {"axisLabel":"Boletos","axeY":107},
+        {"axisLabel":"Reservas","axeY":120}
+      ]
+    },
+    "chartType":"3dstackedbar",
+    "areaBackground":"#6d6e74",
+    "colorTextAxisY":"#f4f3fd",
+    "fontSizeAxisY":"14",
+    "colorLineAxisY":"#2737e6",
+    "colorTextAxisX":"#e1e1e4",
+    "fontSizeAxisX":"14",
+    "colorLabel":"#fcfcfc","fontSizeLabel":"18",
+    "palette":[
+      ["#b30505"],
+      ["#848688","#3b4044"],
+      ["#1dc52b","#4ad366","#1d5ac7","#b30505"],
+      ["#1d5ac7","#b30505"]
+    ],
+    "gradientAngle":"250"}
+ 
+
+
+
+  $('#btn').data('d', servdatos)
+})
+  $('#cantidad').change(function(){
+      let cont = $(this).val()
+      for(cont; cont > 0; cont--) {
+
+      }
+  })
+  let graphObj = {}
+  $('#btn').click(function(){
+    let $this = $(this)
+    let data = $this.data('d')
+    let $container = $this.data('for')
+    let type = $('#tipo').val()
+    graphObj[`${$container}`] = new ToGraph($container, data, type)
+    graphObj[`${$container}`].createContainer()
+    // graphObj[`${$container}`].createTable()
+    // graphObj[`${$container}`].printData
+    graphObj[`${$container}`].getMaxAxesY
+  })
+</script>
+</body>
+</html>
