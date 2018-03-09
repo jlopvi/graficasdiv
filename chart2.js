@@ -207,90 +207,27 @@ class ToGraph {
         return "#"+(0x1000000+(u(((t>>16)-R1)*n)+R1)*0x10000+(u(((t>>8&0x00FF)-G1)*n)+G1)*0x100+(u(((t&0x0000FF)-B1)*n)+B1)).toString(16).slice(1)
     }
   }
-  addGradient () {
-    let self = this
-    let svg =  $(this.container)[0].querySelector('svg')
-    let color = this.color
-    let rotate = this.rotate
-    let rotatetop = this.rotatetop
 
 
-    let gradients = color.map(function(palette, i){
-      let brakePoints = 100/(palette.length-1)
-      let id = $(svg).parent().attr('id')+i
-      let idright = $(svg).parent().attr('id')+i+'right'
-      let idtop = $(svg).parent().attr('id')+i+'top'
-      let stops = palette.map(function (color, i) {
-
-        return {
-          offset: `${ i == 0 ? 0 : Math.round(brakePoints * (i))}%`,
-          'stop-color': `${color}`
-       }
-      })
-      let stopsright = palette.map(function (color, i) {
-
-        return {
-          offset: `${ i == 0 ? 0 : Math.round(brakePoints * (i))}%`,
-          'stop-color': `${self.modColor(-0.2,color)}`
-       }
-      })
-      let stopstop = palette.map(function (color, i) {
-
-        return {
-          offset: `${ i == 0 ? 0 : Math.round(brakePoints * (i))}%`,
-          'stop-color': `${self.modColor(0.5,color)}`
-       }
-      })
-
-      self.createGradient(svg,id,stops,rotate);
-      self.createGradient(svg,idright,stopsright,rotate);
-      self.createGradient(svg,idtop,stopstop,rotatetop);
-    })
-
-
-  }
-  createGradient(svg,id,stops,rotate){
-    // var svgNS = svg.namespaceURI;
-    // var grad  = document.createElementNS(svgNS,'linearGradient');
-    // grad.setAttribute('id',id);
-    // grad.setAttribute('x1', rotate.x1)
-    // grad.setAttribute('x2', rotate.x2)
-    // grad.setAttribute('y1', rotate.y1)
-    // grad.setAttribute('y2', rotate.y2)
-    // for (var i=0;i<stops.length;i++){
-    //   var attrs = stops[i];
-    //   var stop = document.createElementNS(svgNS,'stop');
-    //   for (var attr in attrs){
-    //     if (attrs.hasOwnProperty(attr)) stop.setAttribute(attr,attrs[attr]);
-    //   }
-    //   grad.appendChild(stop);
-    // }
-
-    // var defs = svg.querySelector('defs') ||
-    //     svg.insertBefore( document.createElementNS(svgNS,'defs'), svg.firstChild);
-
-    // return defs.appendChild(grad);
-
-  }
   createAxesGraph () {
     if(this.chartType == 'bar') {
-    //   this.createBars()
+      this.createBars()
     } else if(this.chartType == 'stackedbar') {
-      // this.createStackedBars()
+      this.createStackedBars()
     } else if(this.chartType == '3dbar') {
-      // this.create3dBars()
+      this.create3dBars()
     } else if(this.chartType == '3dstackedbar') {
       this.create3dStackedBars()
     } else if(this.chartType == 'cylinder') {
-      // this.createCylinder()
+      this.createCylinder()
     } else if(this.chartType == 'stackedcylinder') {
-      // this.createStackedCylinder()
+      this.createStackedCylinder()
     }
   }
-  createAxisYLines (axeY) {
+  createAxisYLines (axeY, maxa) {
     let h = this.height*1
     let w = this.width*1
-    let max = Math.round(this.maxAcumAxesY)
+    let max = maxa
     let data = this.data
     let section = this.section
     let self = this
@@ -315,10 +252,7 @@ class ToGraph {
                         return d;
                       })
                       .style('display', 'block') 
-                      .style('top', function(d, i){
-                        var result = Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30 - (wchart/2))
-                        return `${result}px`
-                      })
+                      .style('top', 0)
                       .style('font-size', self.fontSizeAxisY + 'px')
                       .style('color', self.areaBackground)
                       .append('span')
@@ -328,7 +262,7 @@ class ToGraph {
                       .style('display', 'inline-block') 
                       .style('position', 'absolute')
                       .style('top', function(d, i){
-                        var result = Math.round(h - ((h -60)/(self.maxAcumAxesY + 50) * d) -30 - (wchart/2))
+                        var result = Math.round(h - ((h -50)/max  * d ) - 50 )
                         return `${result}px`
                       })
                       .style('right', '5px')
@@ -360,7 +294,7 @@ class ToGraph {
                       .style('border', '0 none')
                       .style('border-bottom', '1px solid' + self.colorLineAxisY)
                       .style('top', function(d, i){
-                        var result = Math.round(h - ((h -60)/(self.maxAcumAxesY + 50) * d) -30 - (wchart/2))
+                        var result = Math.round(h - ((h -50)/max  * d ) - 50 )
                         return `${result}px`
                       })
 
@@ -385,8 +319,7 @@ class ToGraph {
         axeY.push(i)
       }
     }
-    this.createAxisYLines(axeY)
-
+    this.createAxisYLines(axeY, max)
     let wacum = 0
     let counterLabel = 0
     let poinacum = 0
@@ -396,12 +329,12 @@ class ToGraph {
     let posYt = 0
     var indexbar = 0
     var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
-    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 50
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
     section.append('div')
             .style('position', 'absolute')
             .style('width', widthcontainer+'px')
             .style('height', heightcontainer+'px')
-            .style('top', 0)
+            .style('bottom', '42px')
             .style('right', 0)
             .append('div')
             .attr('id', 'bars')
@@ -432,12 +365,12 @@ class ToGraph {
         .enter().append('div')
         .style('width', wchart + 'px')
         .style('height', function(d){
-          let y = parseInt((h-60)/(self.maxAcumAxesY + 50) * d.axeY) + 'px'
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
           return y
         })
         .style('position', 'absolute')
         .style('bottom', function(d){
-          let y = parseInt((h-60)/(self.maxAcumAxesY + 50) * d.axeY) 
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) 
           let oldPosY = posYr
           posYr += y
           return oldPosY  + 'px'
@@ -563,160 +496,584 @@ class ToGraph {
           .style('color', self.colorTextAxisX)
           .style('font-size', self.fontSizeAxisX+'px')
       
-      // axesText.data([key])
-      //         .enter().append('text')
-      //         .text(function(d){
-      //           return d
-      //         })
-      //         .attr('y', function() {
-      //           return Math.round(h - 10)
+ 
+      indexbar++
+      counterLabel++
+      wacum += wchart
+      posY = 0
+      posYText = 0
+      posYr = 0
+      posYt = 0
 
-      //         })
-      //         .attr('x', function (d, i) {
-      //           let x = (40 +  wacum+ (wchart*counterLabel))
-      //           return x
-      //         })
-      //         .style('fill', self.fontColor)
-      //         .attr('font-family','Roboto')
+    }
+  }
+  createStackedCylinder () {
 
-      // axesText.data(data[key])
-      //         .enter().append('text')
-      //         .text(function(d) {
-      //           return d.axeY
-      //         })
-      //         .attr('x', function(d, i ){
-      //           let x = 40 + wacum +(wchart*counterLabel) + (wchart/2)
+    let h = this.height*1
+    let w = this.width*1
+    let max = Math.round(this.maxAcumAxesY) + 20
+    let data = this.data
+    let section = this.section
+    let self = this
+    // let bar  = section.selectAll('div')
+    //             .data(data)
+    //             .enter()
+    let wchart = this.widthStackedAxe
+    let axeY = []
+    for (let i = 0; i <= max; i++) {
+      if(i%20 == 0 ) {
 
-      //           return x
-      //         })
-      //         .attr('y', function(d,i){
-      //           let y = ((h-60)/self.maxAcumAxesY * d.axeY )
-      //           let oldPosY = posYText
-      //           posYText += y
-      //           return h - y + (y/2) -25 - oldPosY
-      //         })
-      //         .style('text-anchor', 'middle')
-      //         .style('fill', function(d,i) {
-      //           if(self.color[i]) {
-      //             return self.modColor(0.8,self.color[i][0])
-      //           } else {
-      //             return self.modColor(0.8,self.color[0][0])
-      //           }
-      //         })
-      //         .style('font-weight','bold')
-      //         .style('fill-opacity', 0)
-      //         .attr('font-family','Roboto')
-      //         .transition()
-      //         .delay(400)
-      //         .duration(500)
-      //         .style('fill-opacity', 1)
+        axeY.push(i)
+      }
+    }
+    this.createAxisYLines(axeY, max)
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    let posY = 0
+    let posYr = 0
+    let posYText = 0
+    let posYt = 0
+    var indexbar = 0
+    var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
+    section.append('div')
+            .style('position', 'absolute')
+            .style('width', widthcontainer+'px')
+            .style('height', heightcontainer+'px')
+            .style('bottom', '42px')
+            .style('right', 0)
+            .append('div')
+            .attr('id', 'bars')
+            .style('position', 'relative')
+            .style('width', '100%')            
+            .style('height', '100%')            
 
-
-
+    for(let key in data) {
+      var bar = section.select('#bars')
+                .append('div')
+                .style('position', 'absolute')
+                .style('left',  function(){
+                  let x = (wchart*counterLabel) + (wchart*counterLabel)
+                  return x+'px'
+                })
+                .style('height', '100%')
+                
+      bar.append('span')
+          .text(key)
+          .style('position', 'absolute')
+          .style('top', '102%')
+          .style('font-size', self.fontSizeLabel+'px')
+          .style('color', self.colorLabel)
+          .style('z-index', '55')
       // Arriba 3dstackedbar
 
+      var front = bar.selectAll('div')
+        .data(data[key])
+        .enter().append('div')
+        .style('width', wchart + 'px')
+        .style('height', function(d){
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
+          return y
+        })
+        .style('position', 'absolute')
+        .style('bottom', function(d){
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) 
+          let oldPosY = posYr
+          posYr += y
+          return oldPosY  + 'px'
+        })
+        .style('left', 0)
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${c} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${c} 100% `
+                }
+                x++
+                return t
+              })
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+              debugger
+              return bg
+            } else {
+              var bg = self.palette[i][0]
+              return bg
+            }
+          }
+        })
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('align-items', 'center')
+        .style('flex-direction', 'column')
+        .style('z-index','53')
+
+      // Arriba
+      front.append('div')
+          .style('width', '100%')
+          .style('height', wchart+ 'px')
+          .style('border-radius', '50%')
+          .style('position', 'absolute')
+          .style('top',  -wchart/2+'px')
+          .style('left', 0)
+          .style('background', function(d, i){
+            // var i = i + 1
+            if(self.palette[i] && self.lengthPalette == 1) {
+              return self.modColor(0.5,self.palette[i][0])
+            } else {
+              // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+              if(self.palette[i].length > 1) {
+                var l = self.palette[i].length
+                var m = 100 / l
+                var x = 0
+                var colors = self.palette[i].map(function(c){
+                  var t = `${self.modColor(0.7, c)} ${m * x}%, `
+                  if(x == l-1){
+                    var t = `${self.modColor(0.1, c)} 100% `
+                  }
+                  x++
+                  return t
+                })
+                var bg = `linear-gradient(${self.gradientAngle-180}deg, ${colors.join('')})`
+                debugger
+                return bg
+              } else {
+                var bg = self.palette[i][0]
+                return bg
+              }
+            }
+          })
+          .style('transform-origin', 'center')
+          .style('transform','rotateX(-45deg)')
+          .style('z-index','54')
 
 
-      // Dercha 3dstackedbar
-      // bar.append('rect')
-      //     .attr('width', wchart/2)
-      //     .attr('height', function(d){
-      //       return 0
-      //     })
-      //     .attr('x', function(d, i){
-      //       let x = 40 + (wchart*counterLabel) + (wchart*counterLabel) + wchart - 0.5
-      //       return x
-      //     })
-      //     .attr('y', function (d, i) {
-      //       return h - 30
-      //     })
-      //     .style('fill', function(d, i) {
-      //       if(self.color[i] && self.color[i].length == 1) {
-      //         return self.modColor(-0.2,self.color[i][0])
-      //       } else {
-      //         let mysvg = $(self.container).children('svg')
-      //         let myCont = mysvg.parent().attr('id')
-      //         if($('#'+myCont+i)[0]) {
-      //           let url = `url(#${myCont}${i}right)`
-      //           return url
-      //         } else if(self.color[0].length == 1) {
-      //           return self.modColor(-0.5,self.color[0][0])
-      //         }
-      //         return `url(#${myCont}0right)`
+      front.append('div')
+          .style('width', '100%')
+          .style('height', wchart+ 'px')
+          .style('border-radius', '50%')
+          .style('position', 'absolute')
+          .style('bottom',  -wchart/2+'px')
+          .style('left', 0)
+          .style('background', function(d, i){
+            if(self.palette[i] && self.lengthPalette == 1) {
+              return self.modColor(0.5,self.palette[i][0])
+            } else {
+              // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+              if(self.palette[i].length > 1) {
+                var l = self.palette[i].length
+                var m = 100 / l
+                var x = 0
+                var colors = self.palette[i].map(function(c){
+                  var t = `${c} ${m * x}%, `
+                  if(x == l-1){
+                    var t = `${c} 100% `
+                  }
+                  x++
+                  return t
+                })
+                var bg = `linear-gradient(${self.gradientAngle-180}deg, ${colors.join('')})`
+                return bg
+              } else {
+                var bg = self.palette[i][0]
+                return bg
+              }
+            }
+          })
+          .style('transform-origin', 'center')
+          .style('transform','rotateX(-45deg)')
+          .style('z-index','54')
 
-      //       }
-      //     })
-      //     .style('transform-origin','bottom left')
-      //     .style('transform', function(d, i){
-      //       let x = 87 * indexbar
-      //       let y = 83 + x
-            
-      //       return `skewY(-45deg) translateY(${y}px)`
-      //     })
-      //     .style('-moz-transform', function(d, i){
-      //       let height = (h-60)/self.maxAcumAxesY * d.axeY
-      //       let g = 0.45
-      //       let w = wchart/2
-      //       let t = `skewY(-45deg) translateY(${height*g-w}px)`
-      //       return t
-      //     })
-      //     .transition()
-      //     .delay(function(d, i){return 0 })
-      //     .duration(500)
-      //     .attr('height', function(d){
-      //       let y = (h-60)/self.maxAcumAxesY * d.axeY
 
-      //       return y
-      //     })
-      //     .attr('y', function(d, i){
-      //       let y = (h-60)/self.maxAcumAxesY * d.axeY
-      //       let oldPosY = posYr
-      //       posYr += y
-      //       return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY
-      //     })
-      // bar.append('rect')
-          // .attr('width', wchart)
-          // .attr('height', function(d){
-          //   return 0
-          // })
-          // .attr('x', function(d, i){
-          //   let x = 40 + (wchart*counterLabel) + (wchart*counterLabel)
+      front.append('span')
+          .text(function(d) {
+            return d.axeY
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+          
+      front.append('span')
+          .text(function(d) {
+            return d.axisLabel
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+      
+ 
+      indexbar++
+      counterLabel++
+      wacum += wchart
+      posY = 0
+      posYText = 0
+      posYr = 0
+      posYt = 0
 
-          //   return x
-          // })
-          // .attr('y', function (d, i) {
-          //   return h - 30
-          // })
-          // .style('fill', function(d, i) {
-          //   if(self.color[i] && self.color[i].length == 1) {
-          //     return self.color[i][0]
-          //   } else {
-          //     let mysvg = $(self.container).children('svg')
-          //     let myCont = mysvg.parent().attr('id')
-          //     if($('#'+myCont+i)[0]) {
-          //       let url = `url(#${myCont}${i})`
-          //       return url
-          //     } else if(self.color[0].length == 1) {
-          //       return self.color[0][0]
-          //     }
-          //     return `url(#${myCont}0)`
+    }
+  }
+  createStackedBars () {
 
-          //   }
-          // })
-          // .transition()
-          // .delay(function(d, i){return 0 })
-          // .duration(500)
-          // .attr('height', function(d){
-          //   let y = (h-60)/self.maxAcumAxesY * d.axeY
+    let h = this.height*1
+    let w = this.width*1
+    let max = Math.round(this.maxAcumAxesY) + 20
+    let data = this.data
+    let section = this.section
+    let self = this
+    // let bar  = section.selectAll('div')
+    //             .data(data)
+    //             .enter()
+    let wchart = this.widthStackedAxe
+    let axeY = []
+    for (let i = 0; i <= max; i++) {
+      if(i%20 == 0 ) {
 
-          //   return y
-          // })
-          // .attr('y', function(d, i){
-          //   let y = (h-60)/self.maxAcumAxesY * d.axeY
-          //   let oldPosY = posY
-          //   posY += y
-          //   return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY
-          // })
+        axeY.push(i)
+      }
+    }
+    this.createAxisYLines(axeY, max)
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    let posY = 0
+    let posYr = 0
+    let posYText = 0
+    let posYt = 0
+    var indexbar = 0
+    var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
+    section.append('div')
+            .style('position', 'absolute')
+            .style('width', widthcontainer+'px')
+            .style('height', heightcontainer+'px')
+            .style('bottom', '42px')
+            .style('right', 0)
+            .append('div')
+            .attr('id', 'bars')
+            .style('position', 'relative')
+            .style('width', '100%')            
+            .style('height', '100%')            
+
+    for(let key in data) {
+      var bar = section.select('#bars')
+                .append('div')
+                .style('position', 'absolute')
+                .style('left',  function(){
+                  let x = (wchart*counterLabel) + (wchart*counterLabel)
+                  return x+'px'
+                })
+                .style('height', '100%')
+                
+      bar.append('span')
+          .text(key)
+          .style('position', 'absolute')
+          .style('top', '102%')
+          .style('font-size', self.fontSizeLabel+'px')
+          .style('color', self.colorLabel)
+          .style('z-index', '55')
+      // Arriba 3dstackedbar
+
+      var front = bar.selectAll('div')
+        .data(data[key])
+        .enter().append('div')
+        .style('width', wchart + 'px')
+        .style('height', function(d){
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
+          return y
+        })
+        .style('position', 'absolute')
+        .style('bottom', function(d){
+          let y = parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) 
+          let oldPosY = posYr
+          posYr += y
+          return oldPosY  + 'px'
+        })
+        .style('left', 0)
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${c} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${c} 100% `
+                }
+                x++
+                return t
+              })
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+              debugger
+              return bg
+            } else {
+              var bg = self.palette[i][0]
+              return bg
+            }
+          }
+        })
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('align-items', 'center')
+        .style('flex-direction', 'column')
+        .style('z-index','53')
+
+      // Arriba
+   
+
+
+
+
+      front.append('span')
+          .text(function(d) {
+            return d.axeY
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+          
+      front.append('span')
+          .text(function(d) {
+            return d.axisLabel
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+      
+ 
+      indexbar++
+      counterLabel++
+      wacum += wchart
+      posY = 0
+      posYText = 0
+      posYr = 0
+      posYt = 0
+
+    }
+  }
+  create3dBars () {
+
+    let h = this.height*1
+    let w = this.width*1
+    let max = Math.round(this.maxAllAxesY) + 20
+    let data = this.data
+    let section = this.section
+    let self = this
+    // let bar  = section.selectAll('div')
+    //             .data(data)
+    //             .enter()
+    let wchart = this.widthAxe
+    let axeY = []
+    for (let i = 0; i <= max; i++) {
+      if(i%20 == 0 ) {
+
+        axeY.push(i)
+      }
+    }
+    this.createAxisYLines(axeY, max)
+    let wacum = 0
+    let counterLabel = 0
+    let poinacum = 0
+    let posY = 0
+    let posYr = 0
+    let posYText = 0
+    let posYt = 0
+    var indexbar = 0
+    var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
+    section.append('div')
+            .style('position', 'absolute')
+            .style('width', widthcontainer+'px')
+            .style('height', heightcontainer+'px')
+            .style('bottom', '42px')
+            .style('right', 0)
+            .append('div')
+            .attr('id', 'bars')
+            .style('position', 'relative')
+            .style('width', '100%')            
+            .style('height', '100%')            
+
+    for(let key in data) {
+      var bar = section.select('#bars')
+                .append('div')
+                .style('position', 'absolute')
+                .style('left',  function(){
+                  let x = (wchart*indexbar) 
+                  return x+'px'
+                })
+                .style('height', '100%')
+                
+      bar.append('span')
+          .text(key)
+          .style('position', 'absolute')
+          .style('top', '102%')
+          .style('font-size', self.fontSizeLabel+'px')
+          .style('color', self.colorLabel)
+          .style('z-index', '55')
+      // Arriba 3dstackedbar
+
+      var front = bar.selectAll('div')
+        .data(data[key])
+        .enter().append('div')
+        .style('width', wchart + 'px')
+        .style('height', function(d){
+          // parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
+          // let y = parseInt(h/(max) * d.axeY) + 'px'
+          let y = parseInt((h-42)/(max) * d.axeY) + 'px'
+          return y
+        })
+        .style('position', 'absolute')
+        .style('bottom', 0)
+        .style('left', function(d, i){
+          let x =  wchart*i
+          indexbar++
+          return x+'px'
+        })
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${c} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${c} 100% `
+                }
+                x++
+                return t
+              })
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+              debugger
+              return bg
+            } else {
+              var bg = self.palette[i][0]
+              return bg
+            }
+          }
+        })
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('align-items', 'center')
+        .style('flex-direction', 'column')
+        .style('z-index','53')
+
+      // Arriba
+      // Arriba
+      front.append('div')
+        .style('width', '100%')
+        .style('height', wchart/3 + 'px')
+        .style('position', 'absolute')
+        .style('bottom',  '100%')
+        .style('left', 0)
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${self.modColor(0.7, c)} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${self.modColor(0.1, c)} 100% `
+                }
+                x++
+                return t
+              })
+              var bg = `linear-gradient(${self.gradientAngle-180}deg, ${colors.join('')})`
+              debugger
+              return bg
+            } else {
+              var bg = self.palette[i][0]
+              return bg
+            }
+          }
+        })
+        .style('transform-origin', 'left bottom')
+        .style('transform','skewX(-45deg)')
+      
+              // derecha
+      front.append('div')
+      .style('background',  function(d, i){
+        if(self.palette[i] && self.lengthPalette == 1) {
+          return self.modColor(0.5,self.palette[i][0])
+        } else {
+          // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+          if(self.palette[i].length > 1) {
+            var l = self.palette[i].length
+            var m = 100 / l
+            var x = 0
+            var colors = self.palette[i].map(function(c){
+              var t = `${self.modColor(0.5, c)} ${m * x}%, `
+              if(x == l-1){
+                var t = `${self.modColor(0.5, c)} 100% `
+              }
+              x++
+              return t
+            })
+            if(self.gradientAngle == 0){
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+            } else {
+              var bg = `linear-gradient(${-self.gradientAngle}deg, ${colors.join('')})`
+            }
+            debugger
+            return bg
+          } else {
+            var bg = self.palette[i][0]
+            return bg
+          }
+        }
+      })
+      .style('position', 'absolute')
+      .style('width', '33%')
+      .style('height', '100%')
+      .style('top', '0')
+      .style('left', '100%')
+      .style('transform-origin', 'bottom left')
+      .style('transform', 'skewY(-45deg)')
+
+
+
+      front.append('span')
+          .text(function(d) {
+            return d.axeY
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+          
+      front.append('span')
+          .text(function(d) {
+            return d.axisLabel
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+      
+ 
       indexbar++
       counterLabel++
       wacum += wchart
@@ -729,291 +1086,26 @@ class ToGraph {
   }
 
 
-
-
   createCylinder () {
 
-    let h = parseInt(this.height)
-    let w = parseInt(this.width)
-
-
-    let max = (Math.round(this.maxAllAxesY / 10) * 10)
+    let h = this.height*1
+    let w = this.width*1
+    let max = Math.round(this.maxAllAxesY) + 20
     let data = this.data
-    let svg = this.svg
+    let section = this.section
     let self = this
-    let bar  = svg.selectAll('rect')
-                .data(data)
-                .enter()
-
-
+    // let bar  = section.selectAll('div')
+    //             .data(data)
+    //             .enter()
     let wchart = this.widthAxe
-
     let axeY = []
     for (let i = 0; i <= max; i++) {
-      if(i%10 == 0 ) {
+      if(i%20 == 0 ) {
 
         axeY.push(i)
       }
     }
-
-    let axes = svg.selectAll('line')
-                  .data(axeY)
-                  .enter().append('line')
-                  .attr('x1',30)
-                  .attr('x2', w)
-                  .style('stroke', self.fontColor)
-                  .style('stroke-width', '0.15')
-                  .attr('y1', function(d, i){
-                    return Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
-                  })
-                  .attr('y2', function(d, i){
-
-                    return  Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
-                  })
-    let axesText = svg.selectAll('text')
-
-    axesText.data(axeY)
-            .enter().append('text')
-            .text(function(d){
-              return d;
-            })
-            .attr('x', 25)
-            .attr('y', function(d, i){
-              return Math.round(h - ((h -60)/self.maxAllAxesY * d) -25) - (wchart/2)
-            })
-            .style('fill', self.fontColor)
-            .style('text-anchor', 'end')
-
-    let wacum = 0
-    let counterLabel = 0
-    let poinacum = 0
-    let wacumt = 0
-    let wacumb = 0
-    for(let key in data) {
-
-      let bar  = svg.append('g')
-                  .selectAll('rect')
-                  .data(data[key])
-                  .enter()
-      axesText.data([key])
-              .enter().append('text')
-              .text(function(d){
-                return d
-              })
-              .attr('y', function() {
-                return Math.round(h - 10)
-
-              })
-              .attr('x', function (d, i) {
-                let x = (40 +  wacum+ (wchart*counterLabel))
-                return x
-              })
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-
-      axesText.data(data[key])
-              .enter().append('text')
-              .text(function(d) {
-                return d.axeY
-              })
-              .attr('x', function(d, i ){
-                let x = 40 +  poinacum+ (wchart*counterLabel) + (wchart/2)
-                poinacum += wchart
-
-                return x
-              })
-              .attr('y', function(d,i){
-                return 0
-              })
-              .style('text-anchor', 'middle')
-              .style('fill', function(d,i) {
-                if(self.color[i]) {
-                  return self.modColor(-0.5,self.color[i][0])
-                } else {
-                  return self.modColor(-0.5,self.color[0][0])
-                }
-              })
-              .style('font-weight', 'bold')
-              .style('fill-opacity', 0)
-              .attr('font-family','Roboto')
-              .transition()
-              .delay(function(d, i){return i*300 })
-              .duration(500)
-              .style('fill-opacity', 1)
-              .attr('y', function(d,i){
-                return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 35
-              })
-
-
-
-
-
-
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('x', function(d, i){
-            let x = 40 +  wacum+ (wchart*counterLabel)
-            wacum += wchart
-            return x
-          })
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i]
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.color[0]
-              }
-              return `url(#${myCont}0)`
-
-            }
-          })
-          .attr('height', function(d){
-            return (h-60)/self.maxAllAxesY * d.axeY
-          })
-          .attr('y', function(d){
-            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
-          })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-          .style('fill-opacity', 1)
-
-      // top
-      bar.append('circle')
-          .attr('r', wchart/2)
-
-          .attr('cx', function(d, i){
-            let x = 40 +  wacumt + (wchart*counterLabel) + wchart/2
-            wacumt += wchart
-            return x
-          })
-          .style('transform-origin','center')
-          .attr('cy', function(d){
-            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30  + 0.5
-          })
-          .style('transform','rotateX(60deg)')
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.modColor(0.2,self.color[i][0])
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i}top)`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
-              }
-              return `url(#${myCont}0top)`
-
-            }
-          })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-          .style('fill-opacity', 1)
-      // Bottom
-
-      bar.append('circle')
-          .attr('r', wchart/2)
-
-          .attr('cx', function(d, i){
-            let x = 40 +  wacumb + (wchart*counterLabel) + wchart/2
-            wacumb += wchart
-            return x
-          })
-          .style('transform-origin','center')
-          .attr('cy', function(d){
-            return h - 60 + 30
-          })
-          .style('transform','rotateX(120deg)')
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i][0]
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
-              }
-              return `url(#${myCont}0top)`
-            }
-          })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-          .style('fill-opacity', 1)
-
-
-
-
-
-
-
-      counterLabel++
-
-
-    }
-  }
-  createStackedCylinder () {
-
-    let h = parseInt(this.height)
-    let w = parseInt(this.width)
-    let max = (Math.round(this.maxAcumAxesY / 10) * 10)
-    let data = this.data
-    let svg = this.svg
-    let self = this
-    let bar  = svg.selectAll('rect')
-                .data(data)
-                .enter()
-    let wchart = this.widthStackedAxe
-    let axeY = []
-    for (let i = 0; i <= max; i++) {
-      if(i%10 == 0 ) {
-
-        axeY.push(i)
-      }
-    }
-
-    let axes = svg.selectAll('line')
-                  .data(axeY)
-                  .enter().append('line')
-                  .attr('x1',30)
-                  .attr('x2', w)
-                  .style('stroke', self.fontColor)
-                  .style('stroke-width', '0.5')
-                  .attr('y1', function(d, i){
-                    return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30  -(wchart/4))
-                  })
-                  .attr('y2', function(d, i){
-
-                    return  Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30 -(wchart/4))
-                  })
-    let axesText = svg.selectAll('text')
-
-    axesText.data(axeY)
-            .enter().append('text')
-            .text(function(d){
-              return d;
-            })
-            .attr('x', 25)
-            .attr('y', function(d, i){
-              return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -25  -(wchart/4))
-            })
-            .style('fill', self.fontColor)
-            .style('text-anchor', 'end')
-
+    this.createAxisYLines(axeY, max)
     let wacum = 0
     let counterLabel = 0
     let poinacum = 0
@@ -1021,236 +1113,188 @@ class ToGraph {
     let posYr = 0
     let posYText = 0
     let posYt = 0
+    var indexbar = 0
+    var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
+    section.append('div')
+            .style('position', 'absolute')
+            .style('width', widthcontainer+'px')
+            .style('height', heightcontainer+'px')
+            .style('bottom', '42px')
+            .style('right', 0)
+            .append('div')
+            .attr('id', 'bars')
+            .style('position', 'relative')
+            .style('width', '100%')            
+            .style('height', '100%')            
+
     for(let key in data) {
-
-      let bar  = svg.append('g')
-                  .selectAll('rect')
-                  .data(data[key])
-                  .enter()
-      axesText.data([key])
-              .enter().append('text')
-              .text(function(d){
-                return d
-              })
-              .attr('y', function() {
-                return Math.round(h - 10)
-
-              })
-              .attr('x', function (d, i) {
-                let x = (40 +  wacum+ (wchart*counterLabel))
-                return x
-              })
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-
-      axesText.data(data[key])
-              .enter().append('text')
-              .text(function(d) {
-                return d.axeY
-              })
-              .attr('x', function(d, i ){
-                let x = 40 + wacum +(wchart*counterLabel) + (wchart/2)
-
-                return x
-              })
-              .attr('y', function(d,i){
-                let y = ((h-60)/self.maxAcumAxesY * d.axeY )
-                let oldPosY = posYText
-                posYText += y
-                return h - y + (y/2) -25 - oldPosY
-              })
-              .style('text-anchor', 'middle')
-              .style('fill', function(d,i) {
-                if(self.color[i]) {
-                  return self.modColor(0.8,self.color[i][0])
-                } else {
-                  return self.modColor(0.8,self.color[0][0])
-                }
-              })
-              .style('font-weight','bold')
-              .style('fill-opacity', 0)
-              .attr('font-family','Roboto')
-              .transition()
-              .delay(400)
-              .duration(500)
-              .style('fill-opacity', 1)
-
-
-
-
-
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('height', function(d){
-            return 0
-          })
-          .attr('x', function(d, i){
-            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel)
-
-            return x
-          })
-
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i][0]
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.color[0][0]
-              }
-              return `url(#${myCont}0)`
-
-            }
-          })
-          .attr('height', function(d){
-            let y = (h-60)/self.maxAcumAxesY * d.axeY
-
-            return y
-          })
-          .attr('y', function(d, i){
-            let y = (h-60)/self.maxAcumAxesY * d.axeY
-            let oldPosY = posY
-            posY += y
-            return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY
-          })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return 0 })
-          .duration(500)
-          .style('fill-opacity', 1)
-
+      var bar = section.select('#bars')
+                .append('div')
+                .style('position', 'absolute')
+                .style('left',  function(){
+                  let x = (wchart*indexbar) 
+                  return x+'px'
+                })
+                .style('height', '100%')
+                
+      bar.append('span')
+          .text(key)
+          .style('position', 'absolute')
+          .style('top', '102%')
+          .style('font-size', self.fontSizeLabel+'px')
+          .style('color', self.colorLabel)
+          .style('z-index', '55')
       // Arriba 3dstackedbar
-      bar.append('circle')
-          .attr('r', wchart/2)
 
-          .attr('cx', function(d, i){
-            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel) +  wchart/2
-
-            return x
-          })
-
-          .style('transform-origin','center')
-          .style('transform',function(d,i){
-            let ba = bar.data().length - 1
-
-            if(i == ba) {
-              return 'rotateX(60deg)'
-            } else {
-              return 'rotateX(120deg)'
-            }
-
-
-          })
-          .attr('cy', function(d, i){
-            let y = (h-60)/self.maxAcumAxesY * d.axeY
-            let oldPosY = posYt
-            posYt += y
-            return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY  + 0.5
-          })
-          .style('fill', function(d, i) {
-            let da = data
-            let ba = bar.data().length - 1
-            if(i == ba ) {
-              if(self.color[i] && self.color[i].length == 1) {
-                return self.modColor(0.5,self.color[i][0])
-              } else {
-                let mysvg = $(self.container).children('svg')
-                let myCont = mysvg.parent().attr('id')
-                if($('#'+myCont+i)[0]) {
-                  let url = `url(#${myCont}${i}top)`
-                  return url
-                } else if(self.color[0].length == 1) {
-                  return self.modColor(0.5,self.color[0][0])
+      var front = bar.selectAll('div')
+        .data(data[key])
+        .enter().append('div')
+        .style('width', wchart + 'px')
+        .style('height', function(d){
+          // parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
+          // let y = parseInt(h/(max) * d.axeY) + 'px'
+          let y = parseInt((h-42)/(max) * d.axeY) + 'px'
+          return y
+        })
+        .style('position', 'absolute')
+        .style('bottom', 0)
+        .style('left', function(d, i){
+          let x =  wchart*i
+          indexbar++
+          return x+'px'
+        })
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${c} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${c} 100% `
                 }
-                return `url(#${myCont}0)`
-
-              }
+                x++
+                return t
+              })
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+              debugger
+              return bg
             } else {
-              if(self.color[i+1] && self.color[i+1].length == 1) {
-                return self.color[i+1][0]
+              var bg = self.palette[i][0]
+              return bg
+            }
+          }
+        })
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('align-items', 'center')
+        .style('flex-direction', 'column')
+        .style('z-index','53')
+
+      // Arriba
+      front.append('div')
+          .style('width', '100%')
+          .style('height', wchart+ 'px')
+          .style('border-radius', '50%')
+          .style('position', 'absolute')
+          .style('top',  -wchart/2+'px')
+          .style('left', 0)
+          .style('background', function(d, i){
+            // var i = i + 1
+            if(self.palette[i] && self.lengthPalette == 1) {
+              return self.modColor(0.5,self.palette[i][0])
+            } else {
+              // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+              if(self.palette[i].length > 1) {
+                var l = self.palette[i].length
+                var m = 100 / l
+                var x = 0
+                var colors = self.palette[i].map(function(c){
+                  var t = `${self.modColor(0.5, c)} ${m * x}%, `
+                  if(x == l-1){
+                    var t = `${self.modColor(0.7, c)} 100% `
+                  }
+                  x++
+                  return t
+                })
+                var bg = `linear-gradient(${self.gradientAngle-180}deg, ${colors.join('')})`
+                debugger
+                return bg
               } else {
-                let mysvg = $(self.container).children('svg')
-                let myCont = mysvg.parent().attr('id')
-                if($('#'+myCont+(i+1))[0]) {
-                  let url = `url(#${myCont}${i+1})`
-                  return url
-                } else if(self.color[0].length == 1) {
-                  return self.modColor(0.5,self.color[0][0])
-                }
-
-                return `url(#${myCont}0)`
+                var bg = self.modColor(0.5, self.palette[i][0])
+                return bg
               }
             }
-
-
           })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return 5 })
-          .duration(500)
-          .style('fill-opacity', 1)
+          .style('transform-origin', 'center')
+          .style('transform','rotateX(-45deg)')
+          .style('z-index','54')
 
-      bar.append('circle')
-          .attr('r', wchart/2)
 
-          .attr('cx', function(d, i){
-            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel) +  wchart/2
-            return x
-          })
-          .style('transform-origin','center')
-          .style('transform',function(d,i){
-            let ba = bar.data().length - 1
-
-            if(i == ba) {
-              return 'rotateX(60deg)'
+      front.append('div')
+          .style('width', '100%')
+          .style('height', wchart+ 'px')
+          .style('border-radius', '50%')
+          .style('position', 'absolute')
+          .style('bottom',  -wchart/2+'px')
+          .style('left', 0)
+          .style('background', function(d, i){
+            if(self.palette[i] && self.lengthPalette == 1) {
+              return self.modColor(0.5,self.palette[i][0])
             } else {
-              return 'rotateX(120deg)'
-            }
-
-          })
-          .attr('cy', function(d, i){
-            let y =  h - 60 + 30
-            return y
-          })
-          .style('fill', function(d, i) {
-            let da = data
-            let ba = bar.data().length - 1
-            if(i == 0 ) {
-              if(self.color[i] && self.color[i].length == 1) {
-                return self.color[i][0]
+              // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+              if(self.palette[i].length > 1) {
+                var l = self.palette[i].length
+                var m = 100 / l
+                var x = 0
+                var colors = self.palette[i].map(function(c){
+                  var t = `${c} ${m * x}%, `
+                  if(x == l-1){
+                    var t = `${c} 100% `
+                  }
+                  x++
+                  return t
+                })
+                var bg = `linear-gradient(${self.gradientAngle-180}deg, ${colors.join('')})`
+                return bg
               } else {
-                let mysvg = $(self.container).children('svg')
-                let myCont = mysvg.parent().attr('id')
-                if($('#'+myCont+i)[0]) {
-                  let url = `url(#${myCont}${i})`
-                  return url
-                } else if(self.color[0].length == 1) {
-                  return self.modColor(0.5,self.color[0][0])
-                }
-                return `url(#${myCont}0)`
-
+                var bg = self.palette[i][0]
+                return bg
               }
-            } else {
-            return 'transparent'
             }
-
-
           })
-          .style('fill-opacity', 0)
-          .transition()
-          .delay(function(d, i){return 5 })
-          .duration(500)
-          .style('fill-opacity', 1)
+          .style('transform-origin', 'center')
+          .style('transform','rotateX(-45deg)')
+          .style('z-index','54')
 
 
 
 
-
-
+      front.append('span')
+          .text(function(d) {
+            return d.axeY
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+          
+      front.append('span')
+          .text(function(d) {
+            return d.axisLabel
+          })
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+      
+ 
+      indexbar++
       counterLabel++
       wacum += wchart
       posY = 0
@@ -1261,546 +1305,143 @@ class ToGraph {
     }
   }
  
-  create3dBars () {
+ 
 
-    let h = parseInt(this.height)
-    let w = parseInt(this.width)
-
-
-    let max = (Math.round(this.maxAllAxesY / 10) * 10)
+  createBars () {
+    let h = this.height*1
+    let w = this.width*1
+    let max = Math.round(this.maxAllAxesY) + 20
     let data = this.data
-    let svg = this.svg
+    let section = this.section
     let self = this
-    let bar  = svg.selectAll('rect')
-                .data(data)
-                .enter()
-
-
+    // let bar  = section.selectAll('div')
+    //             .data(data)
+    //             .enter()
     let wchart = this.widthAxe
-
     let axeY = []
     for (let i = 0; i <= max; i++) {
-      if(i%10 == 0 ) {
+      if(i%20 == 0 ) {
 
         axeY.push(i)
       }
     }
-
-    let axes = svg.selectAll('line')
-                  .data(axeY)
-                  .enter().append('line')
-                  .attr('x1',30)
-                  .attr('x2', w)
-                  .style('stroke', self.fontColor)
-                  .style('stroke-width', '0.15')
-                  .attr('y1', function(d, i){
-                    return Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
-                  })
-                  .attr('y2', function(d, i){
-
-                    return  Math.round(h - ((h -60)/self.maxAllAxesY * d) -30) - (wchart/2)
-                  })
-    let axesText = svg.selectAll('text')
-
-    axesText.data(axeY)
-            .enter().append('text')
-            .text(function(d){
-              return d;
-            })
-            .attr('x', 25)
-            .attr('y', function(d, i){
-              return Math.round(h - ((h -60)/self.maxAllAxesY * d) -25) - (wchart/2)
-            })
-            .style('fill', self.fontColor)
-            .style('text-anchor', 'end')
-
-    let wacum = 0
-    let counterLabel = 0
-    let poinacum = 0
-    for(let key in data) {
-
-      let bar  = svg.append('g')
-                  .selectAll('rect')
-                  .data(data[key])
-                  .enter()
-      axesText.data([key])
-              .enter().append('text')
-              .text(function(d){
-                return d
-              })
-              .attr('y', function() {
-                return Math.round(h - 10)
-
-              })
-              .attr('x', function (d, i) {
-                let x = (40 +  wacum+ (wchart*counterLabel))
-                return x
-              })
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-
-      axesText.data(data[key])
-              .enter().append('text')
-              .text(function(d) {
-                return d.axeY
-              })
-              .attr('x', function(d, i ){
-                let x = 40 +  poinacum+ (wchart*counterLabel) + (wchart/2)
-                poinacum += wchart
-
-                return x
-              })
-              .attr('y', function(d,i){
-                return h  - 35
-              })
-              .style('text-anchor', 'middle')
-              .style('fill', function(d,i) {
-                if(self.color[i]) {
-                  return self.modColor(-0.5,self.color[i][0])
-                } else {
-                  return self.modColor(-0.5,self.color[0][0])
-                }
-              })
-              .style('font-weight', 'bold')
-              .attr('font-family','Roboto')
-              .transition()
-              .delay(function(d, i){return i*50 })
-              .duration(500)
-              .attr('y', function(d,i){
-                return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 35
-              })
-      // derecha
-      bar.append('rect')
-                  .attr('width', wchart/2)
-                  .attr('height', function(d){
-                    return 0
-                  })
-                  .attr('x', function(d, i){
-
-                    let x = 40 +  wacum  + wchart + (wchart*i) + (wchart*counterLabel) - 0.5
-                    return x
-                  })
-                  .attr('y', function (d, i) {
-                    return h - 30
-                  })
-                  .style('transform-origin', 'bottom left')
-                  .style('transform', 'skewY(-45deg)')
-                  .style('fill', function(d, i) {
-                    if(self.color[i] && self.color[i].length == 1) {
-                      return self.modColor(-0.2,self.color[i][0])
-                    } else {
-                      let mysvg = $(self.container).children('svg')
-                      let myCont = mysvg.parent().attr('id')
-                      if($('#'+myCont+i)[0]) {
-                        let url = `url(#${myCont}${i}right)`
-                        return url
-                      } else if(self.color[0].length == 1) {
-                        return self.modColor(-0.2,self.color[0][0])
-                      }
-                      return `url(#${myCont}0right)`
-
-                    }
-                  })
-                  .transition()
-                  .delay(function(d, i){return i*50 })
-                  .duration(500)
-                  .attr('height', function(d){
-                    return (h-60)/self.maxAllAxesY * d.axeY
-                  })
-                  .attr('y', function(d){
-                    return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
-                  })
-      // top
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('height', function(d){
-            return 0
-          })
-          .attr('x', function(d, i){
-            let x = 40 +  (wchart*i) + wacum + (wchart*counterLabel)
-            return x
-          })
-          .attr('y', function(d){
-            return h - 30 - wchart/2 + 0.5
-          })
-          .attr('height', function(d){
-            return wchart/2
-          })
-          .style('transform-origin','right bottom ')
-
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.modColor(0.2,self.color[i][0])
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i}top)`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.modColor(0.5,self.color[0][0])
-              }
-              return `url(#${myCont}0top)`
-
-            }
-          })
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-
-          .attr('y', function(d){
-            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30 - wchart/2 + 0.5
-          })
-          .style('transform','skewX(-45deg)')
-
-
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('height', function(d){
-            return 0
-          })
-          .attr('x', function(d, i){
-            let x = 40 +  wacum+ (wchart*counterLabel)
-            wacum += wchart
-            return x
-          })
-          .attr('y', function (d, i) {
-            return h - 30
-          })
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i]
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.color[0]
-              }
-              return `url(#${myCont}0)`
-
-            }
-          })
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-          .attr('height', function(d){
-            return (h-60)/self.maxAllAxesY * d.axeY
-          })
-          .attr('y', function(d){
-            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
-          })
-
-
-      counterLabel++
-
-    }
-  }
-  createStackedBars () {
-
-    let h = parseInt(this.height)
-    let w = parseInt(this.width)
-    let max = (Math.round(this.maxAcumAxesY / 10) * 10)
-    let data = this.data
-    let svg = this.svg
-    let self = this
-    let bar  = svg.selectAll('rect')
-                .data(data)
-                .enter()
-    let wchart = this.widthStackedAxe
-    let axeY = []
-    for (let i = 0; i <= max; i++) {
-      if(i%10 == 0 ) {
-
-        axeY.push(i)
-      }
-    }
-
-    let axes = svg.selectAll('line')
-                  .data(axeY)
-                  .enter().append('line')
-                  .attr('x1',30)
-                  .attr('x2', w)
-                  .style('stroke', self.fontColor)
-                  .style('stroke-width', '0.5')
-                  .attr('y1', function(d, i){
-                    return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30)
-                  })
-                  .attr('y2', function(d, i){
-
-                    return  Math.round(h - ((h -60)/self.maxAcumAxesY * d) -30)
-                  })
-    let axesText = svg.selectAll('text')
-
-    axesText.data(axeY)
-            .enter().append('text')
-            .text(function(d){
-              return d;
-            })
-            .attr('x', 25)
-            .attr('y', function(d, i){
-              return Math.round(h - ((h -60)/self.maxAcumAxesY * d) -25)
-            })
-            .style('fill', self.fontColor)
-            .style('text-anchor', 'end')
-
+    this.createAxisYLines(axeY, max)
     let wacum = 0
     let counterLabel = 0
     let poinacum = 0
     let posY = 0
+    let posYr = 0
     let posYText = 0
+    let posYt = 0
+    var indexbar = 0
+    var widthcontainer =  parseInt($(this.container).find('#charts').css('width'))
+    var heightcontainer =  parseInt($(this.container).find('#charts').css('height')) - 42
+    section.append('div')
+            .style('position', 'absolute')
+            .style('width', widthcontainer+'px')
+            .style('height', heightcontainer+'px')
+            .style('bottom', '42px')
+            .style('right', 0)
+            .append('div')
+            .attr('id', 'bars')
+            .style('position', 'relative')
+            .style('width', '100%')            
+            .style('height', '100%')            
+
     for(let key in data) {
+      var bar = section.select('#bars')
+                .append('div')
+                .style('position', 'absolute')
+                .style('left',  function(){
+                  let x = (wchart*indexbar) 
+                  return x+'px'
+                })
+                .style('height', '100%')
+                
+      bar.append('span')
+          .text(key)
+          .style('position', 'absolute')
+          .style('top', '102%')
+          .style('font-size', self.fontSizeLabel+'px')
+          .style('color', self.colorLabel)
+          .style('z-index', '55')
+      // Arriba 3dstackedbar
 
-      let bar  = svg.append('g')
-                  .selectAll('rect')
-                  .data(data[key])
-                  .enter()
-      axesText.data([key])
-              .enter().append('text')
-              .text(function(d){
-                return d
-              })
-              .attr('y', function() {
-                return Math.round(h - 10)
-
-              })
-              .attr('x', function (d, i) {
-                let x = (40 +  wacum+ (wchart*counterLabel))
-                return x
-              })
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-
-      axesText.data(data[key])
-              .enter().append('text')
-              .text(function(d) {
-                return d.axeY
-              })
-              .attr('x', function(d, i ){
-                let x = 40 + wacum +(wchart*counterLabel) + (wchart/2)
-
-                return x
-              })
-              .attr('y', function(d,i){
-                let y = ((h-60)/self.maxAcumAxesY * d.axeY )
-                let oldPosY = posYText
-                posYText += y
-                return h - y + (y/2) -25 - oldPosY
-              })
-              .style('text-anchor', 'middle')
-              .style('fill', function(d,i) {
-                if(self.color[i] && self.color[i].length == 1) {
-                  return self.modColor(0.8,self.color[i][0])
-                } else {
-                  return self.modColor(0.8,self.color[0][0])
+      var front = bar.selectAll('div')
+        .data(data[key])
+        .enter().append('div')
+        .style('width', wchart + 'px')
+        .style('height', function(d){
+          // parseInt((h-42)/(self.maxAcumAxesY + 42) * d.axeY) + 'px'
+          // let y = parseInt(h/(max) * d.axeY) + 'px'
+          let y = parseInt((h-42)/(max) * d.axeY) + 'px'
+          return y
+        })
+        .style('position', 'absolute')
+        .style('bottom', 0)
+        .style('left', function(d, i){
+          let x =  wchart*i
+          indexbar++
+          return x+'px'
+        })
+        .style('background', function(d, i){
+          if(self.palette[i] && self.lengthPalette == 1) {
+            return self.modColor(0.5,self.palette[i][0])
+          } else {
+            // linear-gradient(to right, rgba(248,80,50,1) 0%, rgba(39,55,230,1) 28%, rgba(240,47,23,1) 71%, rgba(231,56,39,1) 100%)
+            if(self.palette[i].length > 1) {
+              var l = self.palette[i].length
+              var m = 100 / l
+              var x = 0
+              var colors = self.palette[i].map(function(c){
+                var t = `${c} ${m * x}%, `
+                if(x == l-1){
+                  var t = `${c} 100% `
                 }
+                x++
+                return t
               })
-              .style('fill-opacity', 0)
-              .attr('font-family','Roboto')
-              .transition()
-              .delay(400)
-              .duration(500)
-              .style('fill-opacity', 1)
-
-
-
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('height', function(d){
-            return 0
-          })
-          .attr('x', function(d, i){
-            let x = 40 + (wchart*counterLabel) + (wchart*counterLabel)
-
-            return x
-          })
-          .attr('y', function (d, i) {
-            return h - 30
-          })
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i][0]
+              var bg = `linear-gradient(${self.gradientAngle}deg, ${colors.join('')})`
+              debugger
+              return bg
             } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.color[0][0]
-              }
-              return `url(#${myCont}0)`
-
+              var bg = self.palette[i][0]
+              return bg
             }
-          })
-          .transition()
-          .delay(function(d, i){return 0 })
-          .duration(500)
-          .attr('height', function(d){
-            let y = (h-60)/self.maxAcumAxesY * d.axeY
+          }
+        })
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('align-items', 'center')
+        .style('flex-direction', 'column')
+        .style('z-index','53')
 
-            return y
+      front.append('span')
+          .text(function(d) {
+            return d.axeY
           })
-          .attr('y', function(d, i){
-            let y = (h-60)/self.maxAcumAxesY * d.axeY
-            let oldPosY = posY
-            posY += y
-            return h - ((h-60)/self.maxAcumAxesY * d.axeY ) - 30 - oldPosY
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+          
+      front.append('span')
+          .text(function(d) {
+            return d.axisLabel
           })
-
+          .style('color', self.colorTextAxisX)
+          .style('font-size', self.fontSizeAxisX+'px')
+          .style('position', 'relative')
+          .style('z-index', '55')
+      
+ 
+      indexbar++
       counterLabel++
       wacum += wchart
       posY = 0
       posYText = 0
-
-
-    }
-  }
-  createBars () {
-
-    let h = parseInt(this.height)
-    let w = parseInt(this.width)
-
-
-    let max = (Math.round(this.maxAllAxesY / 10) * 10)
-    let data = this.data
-    let svg = this.svg
-    let self = this
-    let bar  = svg.selectAll('rect')
-                .data(data)
-                .enter()
-
-
-    let wchart = this.widthAxe
-
-    let axeY = []
-    for (let i = 0; i <= max; i++) {
-      if(i%10 == 0 ) {
-
-        axeY.push(i)
-      }
-    }
-
-    let axes = svg.selectAll('line')
-                  .data(axeY)
-                  .enter().append('line')
-                  .attr('x1',30)
-                  .attr('x2', w)
-                  .style('stroke', self.fontColor)
-                  .style('stroke-width', '0.5')
-                  .attr('y1', function(d, i){
-                    return Math.round(h - ((h -60)/self.maxAllAxesY * d) -30)
-                  })
-                  .attr('y2', function(d, i){
-
-                    return  Math.round(h - ((h -60)/self.maxAllAxesY * d) -30)
-                  })
-    let axesText = svg.selectAll('text')
-
-    axesText.data(axeY)
-            .enter().append('text')
-            .text(function(d){
-              return d;
-            })
-            .attr('x', 25)
-            .attr('y', function(d, i){
-              return Math.round(h - ((h -60)/self.maxAllAxesY * d) -25)
-            })
-            .style('fill', self.fontColor)
-            .style('text-anchor', 'end')
-
-    let wacum = 0
-    let counterLabel = 0
-    let poinacum = 0
-    for(let key in data) {
-
-      let bar  = svg.append('g')
-                  .selectAll('rect')
-                  .data(data[key])
-                  .enter()
-      axesText.data([key])
-              .enter().append('text')
-              .text(function(d){
-                return d
-              })
-              .attr('y', function() {
-                return Math.round(h - 10)
-
-              })
-              .attr('x', function (d, i) {
-                let x = (40 +  wacum+ (wchart*counterLabel))
-                return x
-              })
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-
-      axesText.data(data[key])
-              .enter().append('text')
-              .text(function(d) {
-                return d.axeY
-              })
-              .attr('x', function(d, i ){
-                let x = 40 +  poinacum+ (wchart*counterLabel) + (wchart/2)
-                poinacum += wchart
-
-                return x
-              })
-              .attr('y', function(d,i){
-                return h  - 35
-              })
-              .style('text-anchor', 'middle')
-              .style('fill', self.fontColor)
-              .attr('font-family','Roboto')
-              .transition()
-              .delay(function(d, i){return i*50 })
-              .duration(500)
-              .attr('y', function(d,i){
-                return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 35
-              })
-
-
-      bar.append('rect')
-          .attr('width', wchart)
-          .attr('height', function(d){
-            return 0
-          })
-          .attr('x', function(d, i){
-            let x = 40 +  wacum+ (wchart*counterLabel)
-            wacum += wchart
-            return x
-          })
-          .attr('y', function (d, i) {
-            return h - 30
-          })
-          .style('fill', function(d, i) {
-            if(self.color[i] && self.color[i].length == 1) {
-              return self.color[i]
-            } else {
-              let mysvg = $(self.container).children('svg')
-              let myCont = mysvg.parent().attr('id')
-              if($('#'+myCont+i)[0]) {
-                let url = `url(#${myCont}${i})`
-                return url
-              } else if(self.color[0].length == 1) {
-                return self.color[0]
-              }
-              return `url(#${myCont}0)`
-
-            }
-          })
-          .transition()
-          .delay(function(d, i){return i*50 })
-          .duration(500)
-          .attr('height', function(d){
-            return (h-60)/self.maxAllAxesY * d.axeY
-          })
-          .attr('y', function(d){
-            return h - ((h-60)/self.maxAllAxesY * d.axeY ) - 30
-          })
-
-      counterLabel++
+      posYr = 0
+      posYt = 0
 
     }
   }
